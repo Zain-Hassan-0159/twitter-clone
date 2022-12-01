@@ -1,11 +1,11 @@
 import { ChartBarIcon, ChatIcon, DotsHorizontalIcon, HeartIcon, ShareIcon, TrashIcon } from "@heroicons/react/outline";
 import { HeartIcon as SoldiHeart } from "@heroicons/react/solid";
-import { info } from "autoprefixer";
 import { collection, deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
+import { deleteObject, ref } from "firebase/storage";
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Moment from 'react-moment';
-import { db } from "../firebase";
+import { db, storage } from "../firebase";
 
 export default function Post({post}) {
   const {data: session} = useSession();
@@ -37,6 +37,15 @@ export default function Post({post}) {
       signIn();
     }
   }
+
+  async function deletePost(){
+    if (window.confirm("Are you sure you want to delete this post?")){
+      deleteDoc(doc(db, "posts", post.id));
+      if(post.data().image){
+        deleteObject(ref(storage, `posts/${post.id}/image`));
+      }
+    }
+  }
   return (
     <div className="flex p-3 cursor-pointer border-b border-gray-200">
       {/* user image */}
@@ -66,18 +75,22 @@ export default function Post({post}) {
         <p className="text-gray-800 text-[15px] sm:text-[16px] mb-2 ">{post.data().text}</p>
 
         {/* post img */}
-        <img
-          src={post.data().image}
-          alt="post"
-          className="rounded-2xl mr-2"
-        />
-
+               
+          {post.data().image &&
+            (<img
+              src={post.data().image}
+              alt="post"
+              className="rounded-2xl mr-2"
+            />)
+          }
 
         {/* icons */}
 
         <div className="flex justify-between text-gray-500 p-2">
           <ChatIcon className="h-9 w-9 hoverEffect p-2 hover:text-sky-500 hover:bg-sky-100" />
-          <TrashIcon className="h-9 w-9 hoverEffect p-2 hover:text-red-600 hover:bg-red-100" />
+          {session?.user.uid === post?.data().id && (
+            <TrashIcon onClick={deletePost} className="h-9 w-9 hoverEffect p-2 hover:text-red-600 hover:bg-red-100" />
+          )}
           <div className="flex items-center">
           {
             hasLiked ? (
