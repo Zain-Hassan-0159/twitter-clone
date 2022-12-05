@@ -3,29 +3,31 @@ import { HeartIcon as SoldiHeart } from "@heroicons/react/solid";
 import { collection, deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { deleteObject, ref } from "firebase/storage";
 import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import Moment from 'react-moment';
 import { useRecoilState } from "recoil";
 import { modalState, postIdState } from "../atom/modalAtom";
 import { db, storage } from "../firebase";
 
-export default function Post({post}) {
+export default function Post({post, id}) {
   const {data: session} = useSession();
   const [likes, setLikes] = useState([]);
   const [comments, setComments] = useState([]);
   const [hasLiked, setHasLiked] = useState(false);
   const [open, setOpen] = useRecoilState(modalState);
   const [postId, setPostId] = useRecoilState(postIdState);
+  const router = useRouter();
 
   useEffect(()=>{
     const likesData = onSnapshot(
       collection(
-        db, "posts", post.id, "likes"
+        db, "posts", id, "likes"
       ), (snapshot)=> setLikes(snapshot.docs)
     )
     const commentsData = onSnapshot(
       collection(
-        db, "posts", post.id, "comments"
+        db, "posts", id, "comments"
       ), (snapshot)=> setComments(snapshot.docs)
     )
   }, [db])
@@ -37,9 +39,9 @@ export default function Post({post}) {
   async function likePost(){
     if(session){
       if(hasLiked){
-        await deleteDoc(doc(db, "posts", post.id, "likes", session?.user.uid))
+        await deleteDoc(doc(db, "posts", id, "likes", session?.user.uid))
       }else{
-        await setDoc(doc(db, "posts", post.id, "likes", session?.user.uid), {
+        await setDoc(doc(db, "posts", id, "likes", session?.user.uid), {
           username: session.user.username,
         })
       }
@@ -50,18 +52,19 @@ export default function Post({post}) {
 
   async function deletePost(){
     if (window.confirm("Are you sure you want to delete this post?")){
-      deleteDoc(doc(db, "posts", post.id));
-      if(post.data().image){
-        deleteObject(ref(storage, `posts/${post.id}/image`));
+      deleteDoc(doc(db, "posts", id));
+      if(post?.data()?.image){
+        deleteObject(ref(storage, `posts/${id}/image`));
       }
+      router.push("/")
     }
   }
   return (
     <div className="flex p-3 cursor-pointer border-b border-gray-200">
       {/* user image */}
       <img
-        src={post.data().userImg}
-        alt={post.data().name}
+        src={post?.data()?.userImg}
+        alt={post?.data()?.name}
         className="h-11 w-11 rounded-full mr-4"
       />
 
@@ -71,28 +74,30 @@ export default function Post({post}) {
         <div className="flex items-center justify-between">
           {/* post user info */}
           <div className="flex items-center space-x-1 whitespace-nowrap">
-            <h4 className="font-bold text-[15px] sm:text-[16px] hover:underline">{post.data().name}</h4>
-            <span className="text-sm sm:text-[15px]">@{post.data().username}</span>
+            <h4 className="font-bold text-[15px] sm:text-[16px] hover:underline">{post?.data()?.name}</h4>
+            <span className="text-sm sm:text-[15px]">@{post?.data()?.username}</span>
             <span className="text-sm sm:text-[15px] hover:underline">
-              <Moment fromNow >{post?.data().timestamp?.toDate()}</Moment>
+              <Moment fromNow >{post?.data()?.timestamp?.toDate()}</Moment>
             </span>
           </div>
           {/* dot icon */}
           <DotsHorizontalIcon className="h-10 hoverEffect w-10 hover:bg-sky-100 hover:text-sky-500 p-2" />
         </div>
 
-        {/* post text */}
-        <p className="text-gray-800 text-[15px] sm:text-[16px] mb-2 ">{post.data().text}</p>
+        <div onClick={() => router.push(`posts/${id}`)} >
+          {/* post text */}
+          <p  className="text-gray-800 text-[15px] sm:text-[16px] mb-2 ">{post?.data()?.text}</p>
 
-        {/* post img */}
-               
-          {post.data().image &&
+          {/* post img */}
+                
+          {post?.data()?.image &&
             (<img
-              src={post.data().image}
+              src={post?.data()?.image}
               alt="post"
               className="rounded-2xl mr-2"
             />)
           }
+        </div>
 
         {/* icons */}
 
@@ -102,7 +107,7 @@ export default function Post({post}) {
               if(!session){
                 signIn();
               }else{
-                setPostId(post.id);
+                setPostId(id);
                 setOpen(!open);
               }
             }} className="h-9 w-9 hoverEffect p-2 hover:text-sky-500 hover:bg-sky-100" />
@@ -112,7 +117,7 @@ export default function Post({post}) {
               )
             }
           </div>
-          {session?.user.uid === post?.data().id && (
+          {session?.user.uid === post?.data()?.id && (
             <TrashIcon onClick={deletePost} className="h-9 w-9 hoverEffect p-2 hover:text-red-600 hover:bg-red-100" />
           )}
           <div className="flex items-center">
