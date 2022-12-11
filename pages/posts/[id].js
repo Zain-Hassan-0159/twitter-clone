@@ -9,6 +9,7 @@ import Widgets from '../../components/Widgets'
 import Post from '../../components/Post'
 import { db } from '../../firebase'
 import Comment from '../../components/comment'
+import { AnimatePresence, motion } from 'framer-motion'
 
 export default function PostPage({newsResults, randomUsersResults}) {
 
@@ -37,7 +38,7 @@ export default function PostPage({newsResults, randomUsersResults}) {
         <Sidebar />
 
         {/* Feed */}
-        <div className="xl:ml-[370px] border-l border-r border-gray-200 xl:min-w-[576px] sm:ml-[73px] flex-grow max-w-xl">
+        <div className="xl:ml-[280px] border-l border-r border-gray-200 w-[100%] min-w-[598px] sm:ml-[73px]">
             <div className="flex items-center space-x-2 py-2 px-3 sticky top-0 z-50 bg-white border-b border-gray-200">
                 <div className='hoverEffect' onClick={() => router.push("/")}>
                     <ArrowLeftIcon className='h-5' />
@@ -47,11 +48,15 @@ export default function PostPage({newsResults, randomUsersResults}) {
                 </h2>
             </div>
             <Post id={id} post={post} />
-            {comments.length > 0 && (
-              comments.map(comment => (
-                <Comment key={comment?.id} commentId={comment?.id} originalPostId={id} comment={comment?.data()} />
-              ))
-            )}
+            <AnimatePresence>
+              {comments.length > 0 && (
+                  comments.map(comment => (
+                    <motion.div key={comment?.id} initial={{opacity: 0}} animate={{opacity: 1}} exit={{opacity: 0}} transition={{duration: 1}} >
+                      <Comment key={comment?.id} commentId={comment?.id} originalPostId={id} comment={comment?.data()} />
+                    </motion.div>
+                  ))
+                )}
+            </AnimatePresence>
         </div>
 
 

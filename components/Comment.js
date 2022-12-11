@@ -10,6 +10,7 @@ import { useRecoilState } from "recoil";
 import { modalState, postIdState } from "../atom/modalAtom";
 import { db, storage } from "../firebase";
 
+
 export default function Comment({comment, commentId, originalPostId}) {
   const {data: session} = useSession();
   const [likes, setLikes] = useState([]);

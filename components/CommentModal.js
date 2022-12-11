@@ -16,7 +16,9 @@ function CommentModal() {
     const [input, setInput] = useState("");
     const {data: session} = useSession();
     const router = useRouter();
-    
+    const origin = typeof window === 'undefined' ? process.env.BASE_URL : '';
+
+
     useEffect(()=>{
         onSnapshot(doc(db, "posts", postId), (snapshot)=>{
             setPost(snapshot)
@@ -35,7 +37,7 @@ function CommentModal() {
 
         setOpen(false);
         setInput("");
-        router.push(`posts/${postId}`);
+        router.push(`${origin}/posts/${postId}`);
     }
   return (
     <div>
