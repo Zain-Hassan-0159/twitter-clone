@@ -18,7 +18,7 @@ export default function Widgets({newsResults, randomUsersResults}) {
 
         {/* NewsApi */}
         <div className="text-gray-700 space-y-3 bg-gray-100 rounded-xl pt-2 ">
-          <h4 className="font-bold text-xl px-4">What's happening</h4>
+          <h4 className="font-bold text-xl px-4">What&apos;s happening</h4>
           <AnimatePresence>
           {newsResults.slice(0, ArticleNum).map(
             (article) => (
