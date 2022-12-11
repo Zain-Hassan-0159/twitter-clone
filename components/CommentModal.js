@@ -25,6 +25,7 @@ function CommentModal() {
 
     async function sendComment(){
         await addDoc(collection(db, "posts", postId, "comments"), {
+            userId: session.user.uid,
             comment: input,
             name: session.user.name,
             username: session.user.username,
